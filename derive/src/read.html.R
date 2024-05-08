@@ -40,15 +40,20 @@ for (html_file in file_list){
 
 # 输出提取到的数据
 # print(parameter_results)
-parameter_results_range <- parameter_results %>% group_by(PARAMETER,type,sitePFT)  %>% summarize(
-        FG = median(POST,na.rm=TRUE),
-        MIN = min(POST,na.rm=TRUE),
-        MIN = max(POST,na.rm=TRUE)
-)
+write.csv(parameter_results, paste0('./',run_type,'_parameters_all_sites.csv'),row.names=FALSE)
 
-write.csv(parameter_results,
-        paste0('./',run_type,'_parameters_all.csv'),row.names=FALSE)
+parameter_results <- read.csv(paste0('./',run_type,'_parameters_all_sites.csv'))
+parameter_results_range <- parameter_results %>% group_by(PARAMETER,type,site,PFT)  %>% summarize(
+        FG = mean(POST,na.rm=TRUE),
+        MIN = min(POST,na.rm=TRUE),
+        MAX = max(POST,na.rm=TRUE)
+)
+parameter_results_range$MIN <- parameter_results_range$MIN * 0.75
+parameter_results_range$MAX <- parameter_results_range$MAX * 1.25
+
+
+
 write.csv(parameter_results_range,
-        paste0('./',run_type,'_parameters.csv'),row.names=FALSE)
+        paste0('./',run_type,'_parameters_local_prior.csv'),row.names=FALSE)
 write.csv(parameter_results_full,
         paste0('./',run_type,'_simulation.csv'),row.names=FALSE)

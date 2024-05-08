@@ -54,7 +54,6 @@ def make_K_LATOSA_FRAC(K_LATOSA_FRAC_prior=1.3,K_LATOSA_FRAC_vmin_max = [],pft =
 # print(make_param(),make_K_LATOSA())
 
 parameter_df = pd.read_csv('./DBF_parameters_local_prior.csv')
-parameter_df_prior = pd.read_csv('./DBF_parameters_all_sites.csv')
 
 site_list = list(set(parameter_df['site'].tolist()))
 
@@ -66,24 +65,34 @@ for site in site_list:
     forest_type = site_df['type'].tolist()[0]
     pft = site_df['PFT'].tolist()[0]
     
-    site_df_prior = parameter_df_prior[parameter_df_prior['site']==site]
-    
     parameter_list = site_df["PARAMETER"]
     
     for parameter_ in parameter_list:
-        
-        # first year optimized parameter
-        site_df_prior_parameter = site_df_prior[site_df_prior['PARAMETER']==parameter_]
-        parameter_prior_value = site_df_prior_parameter['POST'].tolist()[0]
-        
         site_parameter_df = site_df[site_df['PARAMETER']==parameter_]
-        parameter_NAME = parameter_.split('__')[0]        
         
+        parameter_NAME = parameter_.split('__')[0]
+        parameter_value = site_parameter_df['FG'].tolist()[0]
         parameter_min = site_parameter_df['MIN'].tolist()[0]
         parameter_max = site_parameter_df['MAX'].tolist()[0]
 
         if parameter_NAME in ['Wlim','STRESS_GS',"STRESS_GM",'LAI_MAX_TO_HAPPY']:
             parameter_max = min(parameter_max,1)
+        
+        # if parameter_NAME in ['SLA']:
+        #     if pft == 6:
+        #         parameter_range = [0.013, 0.05]
+        #     elif pft == 4:
+        #         parameter_range = [0.004, 0.03]
+        #     else:
+        #         parameter_range = [0.004, 0.05]
+        
+        # if parameter_NAME in ['LAI_MAX']:
+        #     if pft == 6:
+        #         parameter_range = [5.2, 6.8]
+        #     elif pft == 4:
+        #         parameter_range = [3, 8]
+        #     else:
+        #         parameter_range = [1.5, 10]
         
         parameter_range = [parameter_min,parameter_max]
 
@@ -91,23 +100,28 @@ for site in site_list:
         
         if parameter_NAME == "K_LATOSA_MIN":
             parameter_list_all.append(make_K_LATOSA_MIN(
-                K_LATOSA_prior = parameter_prior_value,
+                K_LATOSA_prior = parameter_value,
                 K_LATOSA_vmin_max = parameter_range,
                 pft = pft))
         elif parameter_NAME == "K_LATOSA_FRAC":
             parameter_list_all.append(make_K_LATOSA_FRAC(
-                K_LATOSA_FRAC_prior = parameter_prior_value,
+                K_LATOSA_FRAC_prior = parameter_value,
                 K_LATOSA_FRAC_vmin_max = parameter_range,
                 pft = pft))
         else:
             parameter_list_all.append(make_param(
                 Name = parameter_NAME,
                 pft_dependent = 'y',
-                prior = parameter_prior_value,
+                prior = parameter_value,
                 vmin_max = parameter_range,
                 pft = pft))
     
-    parameter_file = '/home/orchidee02/quanpan/phd/orchidas/src/parameters/' + forest_type + '_' + site + '.py'
+    current_directory = os.getcwd()
+
+    if 'orchidee02' not in os.getcwd():
+        parameter_file = '../Trash/' + forest_type + '_' + site + '.py'
+    else:
+        parameter_file = '/home/orchidee02/quanpan/phd/orchidas/src/parameters/' + forest_type + '_local_' + site + '.py'
 
     if not os.path.exists(parameter_file):
         copy_file('./example.py',parameter_file)

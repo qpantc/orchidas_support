@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 import os
+import re
 
 def read_txt_file(filename):
     with open(filename, 'r') as file:
@@ -27,7 +28,9 @@ def copy_file(source, destination):
 def create_task(run_type='optimize',methods = "L-BFGS-B",nodes = 1,ppn = 5,output_level = 0,
                 site_id="FR_Fon2006",year = "", year_end="",pft=6, 
                 traits = "VCMAX25, A1, B1",iter = 10, nspin="5y",
-                run_path ='./',orchidas_src = './',parameter_def="config/paramdef.py",
+                run_path ='./',
+                orchidas_src = '/home/orchidee02/quanpan/phd/orchidas/src/',
+                parameter_def='config/parameters/paramdef.py', 
                 driver_path='/home/orchidee02/quanpan/phd/drivers/ncdriver/yearly'):
     
     task_dir = run_path + site_id + '_' + run_type[0:2] + '_'+year+'_'+ year_end +'/'
@@ -118,11 +121,8 @@ if __name__ == '__main__':
     if not os.path.exists('../run.sh'):
         copy_file('./run.sh','../run.sh')
 
-
     orchidas_src = '/home/orchidee02/quanpan/phd/orchidas/src/'
     
-    
-
     traits_file = 'traits.txt'
     site_info_file = 'siteinfo.txt'
 
@@ -134,16 +134,18 @@ if __name__ == '__main__':
         # ['BE-Bra1996', '1996', '1996', '51.30761', '4.51984', '1', '0.5','6']
         create_task(
             run_type='optimize',
-            methods = "GA", # L-BFGS-B
+            methods = "L-BFGS-B", # L-BFGS-B  GA
             nodes = 1,
             ppn = 5,
-            output_level = 6,
+            output_level = 0,
             site_id=site_text[0],
             year = site_text[1], 
             year_end=site_text[2],
             pft='6', 
-            traits = traits,iter = 30, nspin="2x",
+            traits = traits,iter = 15, nspin="2x",
             orchidas_src = orchidas_src,
-            run_path ='/home/orchidee02/quanpan/phd/orchidas/Timeseries_research/priori/DBF/',
-            parameter_def='config/parameters/paramdef.py',
+            run_path ='/home/orchidee02/quanpan/phd/orchidas/Timeseries_research/prior/DBF/',
+            # parameter_def='/home/orchidee02/quanpan/phd/orchidas/config/parameters/paramdef.py', 
+            parameter_def='/home/orchidee02/quanpan/phd/orchidas/src/parameters/' + 'DBF' + '_' + re.sub(r'\d+$', '', site_text[0]) + '.py',
+
             driver_path='/home/orchidee02/quanpan/phd/drivers/ncdriver/yearly/')
